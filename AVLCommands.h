@@ -15,14 +15,15 @@ class AVLNode;
 
 class AVL: public BST
 {
-	BST tree;
+	//BST tree;
 public:
     AVL():BST(){}; //tree.root_(nullptr), size_(0) {}
 //delete()
 //deleteMin()
 //void rightRotation(AVLNode )
 	void InsertH(int key); //creates node and calls recursive insert()
-	void insert(int key, shared_ptr<BSTNode> node);//shared_ptr<BSTNode> newNode, shared_ptr<BSTNode> node); 
+	void insert(int key, shared_ptr<BSTNode> node, shared_ptr<BSTNode> parent);//shared_ptr<BSTNode> newNode, shared_ptr<BSTNode> node); 
+	//void Insert(int key);
 	int Height(shared_ptr<BSTNode> t)
     {
       if (t)

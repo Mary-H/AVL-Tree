@@ -7,15 +7,15 @@ OPT=-O3 -std=c++14
 #AVLCOMMANDS_OBJ=$(AVLCOMMANDS_SRC:.cpp=.o)
 
 .PHONY: all
-all: BSTSanityCheck AVLCommands #CreateData
+all: BSTSanityCheck AVLCommands CreateData
 
 
-#CreateData: CreateData.cxx json.hpp
-	#$(CC) $(OPT) CreateData.cxx -o CreateData
+CreateData: CreateData.cxx json.hpp
+	$(CC) $(OPT) CreateData.cxx -o CreateData
 
 #EXECUTABLE
 AVLCommands: AVLCommands.o BST.o json.hpp 
-	$(CC) $(DEV) -o AVlCommands AVLCommands.o BST.o
+	$(CC) $(DEV) -o AVLCommands AVLCommands.o BST.o
 
 BSTSanityCheck: BSTSanityCheck.cxx BST.o
 	$(CC) $(DEV) BSTSanityCheck.cxx BST.o -o BSTSanityCheck

@@ -231,6 +231,7 @@ std::string BST::JSON() const {
 			auto v = nodes.front();
 			nodes.pop();
 			std::string key = std::to_string(v->key_);
+			result[key]["height"] = v->height_;
 			if (v->left_ != nullptr) {
 				result[key]["left"] = v->left_->key_;
 				nodes.push(v->left_);
