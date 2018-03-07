@@ -1,62 +1,63 @@
-//Author: Mary Hamidi 
-#ifndef _AVL_COMMANDS
-#define _AVL_COMMANDS
-
-//#include "json.hpp"
-#include <iostream>
+#include <memory>
 #include <string>
-
-#include "BST.h"
 
 using namespace std; 
 //using namespace nlohmann;
 
-class AVLNode; 
+class AVL;
 
-class AVL: public BST
-{
-	//BST tree;
-public:
-    AVL():BST(){}; //tree.root_(nullptr), size_(0) {}
-//delete()
-//deleteMin()
-//void rightRotation(AVLNode )
-	void InsertH(int key); //creates node and calls recursive insert()
-	void insert(int key, shared_ptr<BSTNode> node, shared_ptr<BSTNode> parent);//shared_ptr<BSTNode> newNode, shared_ptr<BSTNode> node); 
-	//void Insert(int key);
-	int Height(shared_ptr<BSTNode> t)
-    {
-      if (t)
-		return t->height_;
-	  else
-		return -1; 
-    } 
-//AVLNode node; 
+class AVLNode {
+ public:
+ 	AVLNode(int key);
+ 	AVLNode(int key, std::weak_ptr<AVLNode> parent);
+ 	bool IsLeaf() const;
+ 	bool IsMissingChild() const;
+ 	bool HasLeftChild() const;
+ 	bool HasRightChild() const;
+ 	void DeleteChild(std::shared_ptr<AVLNode> v);
+ 	void ReplaceChild(std::shared_ptr<AVLNode> v, std::shared_ptr<AVLNode> u);
 
-};
+ 	int Height(shared_ptr<AVLNode> t);
 
-class AVLNode: public BSTNode
-{
-public:
-	AVLNode(int key): BSTNode(key){}
-	AVLNode(int key, std::weak_ptr<BSTNode> parent):BSTNode(key, parent)
-	{
-		balencefactor = Height(right_) - Height(left_); 
-	}
-	//shared_ptr<BSTNode> node;
-    int Height(shared_ptr<BSTNode> t)
-    {
-      if (t)
-		return t->height_;
-	  else
-		return -1; 
-    } 
-	
-	friend class AVL;
+ 	int max(int leftH, int rightH); 
 
-private:
-	int balencefactor; //Balence Factor 
-};
+ 	friend class AVL; 
+
+ private:
+	 int bf_; //Balence factor
+	 int key_;
+	 int height_; 
+	 std::weak_ptr<AVLNode> parent_;
+	 std::shared_ptr<AVLNode> left_;
+	 std::shared_ptr<AVLNode> right_;
 
 
-#endif 
+}; // class AVLNode
+
+class AVL {
+ public:
+ 	AVL();
+
+ 	void Insert(int key);
+ 	bool Delete(int key);
+ 	bool Find(int key) const;
+ 	std::string JSON() const;
+ 	size_t size() const;
+ 	bool empty() const;
+ 	int DeleteMin();
+
+ 	void InsertH(int key); //creates node and calls recursive insert()
+ 	void insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent); 
+
+ 	int Height(shared_ptr<AVLNode> t);
+
+ protected:
+	void DeleteLeaf(std::shared_ptr<AVLNode> currentNode);
+	int DeleteMin(std::shared_ptr<AVLNode> currentNode);
+
+
+
+ 	std::shared_ptr<AVLNode> root_;
+ 	size_t size_;
+}; // class AVL
+

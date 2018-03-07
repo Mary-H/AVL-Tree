@@ -14,8 +14,8 @@ CreateData: CreateData.cxx json.hpp
 	$(CC) $(OPT) CreateData.cxx -o CreateData
 
 #EXECUTABLE
-AVLCommands: AVLCommands.o BST.o json.hpp 
-	$(CC) $(DEV) -o AVLCommands AVLCommands.o BST.o
+AVLCommands: AVLCommands.o json.hpp 
+	$(CC) $(DEV) -o AVLCommands AVLCommands.o
 
 BSTSanityCheck: BSTSanityCheck.cxx BST.o
 	$(CC) $(DEV) BSTSanityCheck.cxx BST.o -o BSTSanityCheck
@@ -24,7 +24,7 @@ BSTSanityCheck: BSTSanityCheck.cxx BST.o
 BST.o: BST.cpp BST.h
 	$(CC) $(DEV) -c BST.cpp
 
-AVLCommands.o: AVlCommands.cpp AVLCommands.h BST.h 
+AVLCommands.o: AVlCommands.cpp AVLCommands.h 
 	$(CC) $(DEV) -c AVLCommands.cpp
 
 
