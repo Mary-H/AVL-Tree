@@ -21,19 +21,13 @@ AVLNode::AVLNode(int key) :
 	key_(key),
 	parent_(std::weak_ptr<AVLNode>()),
 	left_(nullptr),
-	right_(nullptr) 
-{
-	bf_ = Height(right_) - Height(left_); 
-}
+	right_(nullptr) {}
 
 AVLNode::AVLNode(int key, std::weak_ptr<AVLNode> parent) :
 	key_(key),
 	parent_(parent),
 	left_(nullptr),
-	right_(nullptr) 
-{
-	bf_ = Height(right_) - Height(left_); 
-}
+	right_(nullptr) {}
 
 bool AVLNode::IsLeaf() const {
 	return left_ == nullptr && right_ == nullptr;
@@ -122,14 +116,6 @@ void AVL::insert(shared_ptr<AVLNode> node, shared_ptr<AVLNode> newNode)
     newNode->height_ = 1+ max(Height(newNode->left_), Height(newNode->right_)); 
     
 }*/
-
-int AVLNode::Height(shared_ptr<AVLNode> t)
-{
-	if (t)
-		return t->height_;
-	else
-		return -1; 
-}
 
 int AVL::Height(shared_ptr<AVLNode> t)
 {
@@ -253,6 +239,7 @@ std::string AVL::JSON() const {
 			nodes.pop();
 			std::string key = std::to_string(v->key_);
 			result[key]["height"] = v->height_;
+			result[key]["b-factor"] = v->bf_;
 			if (v->left_ != nullptr) {
 				result[key]["left"] = v->left_->key_;
 				nodes.push(v->left_);
@@ -309,16 +296,14 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent) 
     {
         //node->left_ = std::make_shared<BSTNode>(key, lastNode);
     	insert(key, node->left_, node);
-    	/*if (node->bf_ <= -2) //LeftLeft or LeftRight
+    	if (Height(node->right_) - Height(node->left_) == -2) //bf_ <= -2) //LeftLeft
         {
-          if (key < node->left_->key_)
-          	{
-               // rightRotation(node, parent); //LeftLeft, rotate rigt where node->left will be the new subtree roo
-            //else
-                //leftRotation(node->left); 
-                //rightRotation(node); 
-         	}
-        }*/
+            cout << "Key: " << node->left_->key_ << endl;
+            root_ = rightRotation(node->left_, node);
+
+            //cout << "Key: " <<  root_->key_ << endl;
+            
+         }
     }
     else if (key > node->key_)//(newNode->key_ > node->key_)
     {
@@ -326,8 +311,51 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent) 
     }
 
     node->height_ = 1 + max( Height(node->left_), Height(node->right_)); 
+    node->bf_ = Height(node->left_) - Height(node->right_);
     
 }
+
+
+
+
+ // if (key < node->left_->key_)
+          //{
+          	//cout << "Key: " << node->key_ << endl;
+          	
+
+            //std::shared_ptr<AVLNode> p = node->left_->parent_.lock();
+
+            //std::shared_ptr<AVLNode> temp = 
+
+
+
+
+
+
+
+
+  //p->ReplaceChild(node->left_, temp);
+
+            //node = rightRotation(node->left_, node);
+            //cout << "KEY: " << temp->right_->key_ << endl;
+            //p->ReplaceChild(node, );
+
+         //cout << "Key: " << node->key_ << endl;
+               // rightRotation(node, parent); //LeftLeft, rotate rigt where node->left will be the new subtree roo
+            //else
+                //leftRotation(node->left); 
+                //rightRotation(node); 
+         // }
+
+
+
+
+
+
+
+
+
+
 
 /*shared_ptr <AVLNode> rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
 {
@@ -342,6 +370,25 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent) 
     return nodeLC; 
 
 }*/
+
+shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
+{
+	//cout << "Right Rotation need to be executed" << endl;
+
+	//shared_ptr<AVLNode> temp = node->right_->parent_.lock();
+
+	//cout << "Key: " << node->key_ << endl;
+
+    parent->left_ = node->right_;
+    node->right_ = parent;
+
+    parent->height_ = max(Height(parent->right_), Height(parent->left_) ) + 1;
+    node->height_ = max(Height(node->left_), parent->height_) + 1;
+   
+    return node;    
+
+	//return nullptr;
+}
 
 
 
@@ -372,9 +419,13 @@ int main(int argc, char** argv)
     T.InsertH(56);
     T.InsertH(2);*/
 
-    T.InsertH(1); 
-    T.InsertH(2); 
-    T.InsertH(3); 
+    T.InsertH(15); 
+    T.InsertH(10); 
+    T.InsertH(9);
+    //T.InsertH(22);
+    //T.InsertH(12);
+    //T.InsertH(55);
+    //T.InsertH(54); 
 
     
     cout << T.JSON() << endl; 

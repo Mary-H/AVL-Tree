@@ -17,20 +17,20 @@ class AVLNode {
  	void DeleteChild(std::shared_ptr<AVLNode> v);
  	void ReplaceChild(std::shared_ptr<AVLNode> v, std::shared_ptr<AVLNode> u);
 
- 	int Height(shared_ptr<AVLNode> t);
+ 	//int Height(shared_ptr<AVLNode> t);
 
  	int max(int leftH, int rightH); 
 
- 	friend class AVL; 
 
- private:
+ protected:
 	 int bf_; //Balence factor
 	 int key_;
 	 int height_; 
 	 std::weak_ptr<AVLNode> parent_;
 	 std::shared_ptr<AVLNode> left_;
 	 std::shared_ptr<AVLNode> right_;
-
+ 
+ friend class AVL; 
 
 }; // class AVLNode
 
@@ -46,16 +46,16 @@ class AVL {
  	bool empty() const;
  	int DeleteMin();
 
- 	void InsertH(int key); //creates node and calls recursive insert()
- 	void insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent); 
-
- 	int Height(shared_ptr<AVLNode> t);
+    void InsertH(int key); //creates node and calls recursive insert(
 
  protected:
+    void insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent); 
+ 	int Height(shared_ptr<AVLNode> t);
 	void DeleteLeaf(std::shared_ptr<AVLNode> currentNode);
 	int DeleteMin(std::shared_ptr<AVLNode> currentNode);
 
-
+	// Balance Functions
+	shared_ptr<AVLNode> rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent);
 
  	std::shared_ptr<AVLNode> root_;
  	size_t size_;
