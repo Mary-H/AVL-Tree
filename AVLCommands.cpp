@@ -239,8 +239,8 @@ std::string AVL::JSON() const {
 			auto v = nodes.front();
 			nodes.pop();
 			std::string key = std::to_string(v->key_);
+			result[key]["balance factor"] = v->bf_;
 			result[key]["height"] = v->height_;
-			result[key]["b-factor"] = v->bf_;
 			if (v->left_ != nullptr) {
 				result[key]["left"] = v->left_->key_;
 				nodes.push(v->left_);
@@ -256,6 +256,7 @@ std::string AVL::JSON() const {
 			}
 		}
 	}
+	result["height"] = root_->height_; 
 	result["size"] = size_;
 	return result.dump(2) + "\n";
 }
@@ -303,17 +304,6 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent) 
         {
           if (key < node->left_->key_)
           {
-           // if (node->parent_.lock() == nullptr)
-            //	node->parent_.reset();
-
-            //shared_ptr<AVLNode> temp = node->left_->parent_.lock();
-
-            //
-           /* cout << "Old Root Adress: " << node << endl;
-            cout << "Root Parent Adress: " << node->parent_.lock() << endl;*/
-            
-           // cout << "Key: " << node->left_->key_ << endl;
-
             node = rightRotation(node->left_, node);
 
             /*shared_ptr<AVLNode> temp = node->parent_.lock();
@@ -323,16 +313,17 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent) 
 
             if (parent == nullptr)//node->parent_.lock() == nullptr)
             {
-            	cout << parent << endl;
-            	cout << node << endl;
-            	cout << "getting here: " << endl;// parent->left_ << endl;
+            	//cout << parent << endl;
+            	//cout << node << endl;
+            	//cout << "getting here: " << endl;// parent->left_ << endl;
             	//node->parent_ = parent->left_;
             	root_ = node;
+            	//root_->bf_ = Height(root_->right_) - Height(root_->left_);
             }
             else
             {
-            	cout << "Key Parent " << parent->key_ << endl;
-            	cout << "Child : " << node->key_ << endl;
+            	//cout << "Key Parent " << parent->key_ << endl;
+            	//cout << "Child : " << node->key_ << endl;
             	node->parent_ = parent;
             	parent->left_ = node;
             	//parent = node;
@@ -356,7 +347,7 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent) 
     }
 
     node->height_ = 1 + max(Height(node->left_), Height(node->right_)); 
-    node->bf_ = Height(node->left_) - Height(node->right_);
+    node->bf_ = Height(node->right_) - Height(node->left_);
     
 }
 
@@ -376,8 +367,13 @@ shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLN
 
    // weak_ptr<AVLNode> child = node->right_; 
     parent->height_ = max(Height(parent->right_), Height(parent->left_) ) + 1;
+
     node->height_ = max(Height(node->left_), parent->height_) + 1;
+
+    node->bf_ = Height(node->right_) - Height(node->left_);
    
+    parent->bf_ = Height(parent->right_) - Height(parent->left_);
+
     return node;    
 
 	//return nullptr;
@@ -389,9 +385,11 @@ shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLN
     
     //node->ReplaceChild(node->right_, temp);
 
-/*
+
 int main(int argc, char** argv)
 {
+
+   AVL T;
 
   ifstream file;
   file.open(argv[1]);
@@ -403,17 +401,9 @@ int main(int argc, char** argv)
   string fileName;
   fileName.append(argv[1]);
     
-    //cout << fileName << endl; 
+  string opnum;  
 
-    string dump = jsonObject.dump(4); 
-    //cout << dump << endl; 
-
-    //int numoperations = jsonObject["metadata"]["numOps"];
-    string opnum;  
-
-    AVL T; //Declaring AVL 
-
-    for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
+  for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
   { 
     opnum = itr.key();
 
@@ -426,7 +416,7 @@ int main(int argc, char** argv)
 
       else 
         cout << "Inserting:" << key << endl;
-        //T.InsertH(key);   
+        T.InsertH(key);   
     }
 
     else if (jsonObject[opnum]["operation"] == "DeleteMin")
@@ -435,47 +425,18 @@ int main(int argc, char** argv)
       //T.DeleteMin(); 
     }
   }
-      T.InsertH(15); 
+
+      //Declaring AVL 
+
+     /* T.InsertH(15); 
       T.InsertH(10);
       T.InsertH(9);
+      T.InsertH(3);
+      T.InsertH(2);
+      T.InsertH(16);
+      T.InsertH(10);*/
+
       cout << T.JSON() << endl; 
-
-}*/
-
-
-
-
-int main(int argc, char** argv)
-{
-
-    
-    AVL T;
-
-    /*T.InsertH(22);
-    T.InsertH(44); 
-    T.InsertH(12);
-    T.InsertH(56);
-    T.InsertH(2);*/
-    
-    T.InsertH(17);
-    T.InsertH(15); 
-    T.InsertH(10);
-    T.InsertH(11);
-    T.InsertH(8);
-    T.InsertH(6); 
-    T.InsertH(1);
-
-    //T.Delete(12);
-
-    //T.DeleteMin();
-
-    //T.InsertH(22);
-    //T.InsertH(12);
-    //T.InsertH(55);
-    //T.InsertH(54); 
-
-    
-    cout << T.JSON() << endl; 
 
 }
 
