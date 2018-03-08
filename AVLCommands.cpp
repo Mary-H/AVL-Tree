@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <queue>
+#include <fstream>
 #include "json.hpp"
 
 #include "AVLCommands.h"
@@ -271,6 +272,8 @@ void AVL::InsertH(int key)
 	if (root_ == nullptr)
     {
       root_ = std::make_shared<AVLNode>(key);
+      root_->height_ = 0;
+      root_->bf_ = 0;
       size_++;
     }
     else
@@ -298,90 +301,80 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent) 
     	insert(key, node->left_, node);
     	if (Height(node->right_) - Height(node->left_) == -2) //bf_ <= -2) //LeftLeft
         {
-            cout << "Key: " << node->left_->key_ << endl;
-            root_ = rightRotation(node->left_, node);
+          if (key < node->left_->key_)
+          {
+           // if (node->parent_.lock() == nullptr)
+            //	node->parent_.reset();
 
-            //cout << "Key: " <<  root_->key_ << endl;
+            //shared_ptr<AVLNode> temp = node->left_->parent_.lock();
+
+            //
+           /* cout << "Old Root Adress: " << node << endl;
+            cout << "Root Parent Adress: " << node->parent_.lock() << endl;*/
             
-         }
+           // cout << "Key: " << node->left_->key_ << endl;
+
+            node = rightRotation(node->left_, node);
+
+            /*shared_ptr<AVLNode> temp = node->parent_.lock();
+
+            cout << "Key: " << temp->key_ << endl;*/
+
+
+            if (parent == nullptr)//node->parent_.lock() == nullptr)
+            {
+            	cout << parent << endl;
+            	cout << node << endl;
+            	cout << "getting here: " << endl;// parent->left_ << endl;
+            	//node->parent_ = parent->left_;
+            	root_ = node;
+            }
+            else
+            {
+            	cout << "Key Parent " << parent->key_ << endl;
+            	cout << "Child : " << node->key_ << endl;
+            	node->parent_ = parent;
+            	parent->left_ = node;
+            	//parent = node;
+            }
+            
+
+
+            /*cout << "Key new root: " << node->key_ << endl;
+            cout << "New Root Adress: " << node << endl;
+            cout << "Parent Adress: " << node->right_->parent_.lock() << endl;*/
+            //root_ = node;
+
+
+          }
+        }  
     }
     else if (key > node->key_)//(newNode->key_ > node->key_)
     {
     	insert(key, node->right_, node);
+    	cout << " *** getting here" << endl;
     }
 
-    node->height_ = 1 + max( Height(node->left_), Height(node->right_)); 
+    node->height_ = 1 + max(Height(node->left_), Height(node->right_)); 
     node->bf_ = Height(node->left_) - Height(node->right_);
     
 }
 
 
 
-
- // if (key < node->left_->key_)
-          //{
-          	//cout << "Key: " << node->key_ << endl;
-          	
-
-            //std::shared_ptr<AVLNode> p = node->left_->parent_.lock();
-
-            //std::shared_ptr<AVLNode> temp = 
-
-
-
-
-
-
-
-
-  //p->ReplaceChild(node->left_, temp);
-
-            //node = rightRotation(node->left_, node);
-            //cout << "KEY: " << temp->right_->key_ << endl;
-            //p->ReplaceChild(node, );
-
-         //cout << "Key: " << node->key_ << endl;
-               // rightRotation(node, parent); //LeftLeft, rotate rigt where node->left will be the new subtree roo
-            //else
-                //leftRotation(node->left); 
-                //rightRotation(node); 
-         // }
-
-
-
-
-
-
-
-
-
-
-
-/*shared_ptr <AVLNode> rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
-{
-    shared_ptr<BSTNode> nodeLC = node ->left_.lock(); //node's Left Child
-    shared_ptr<BSTNode> nodeLCRC = nodeLC -> right_.lock(); //node's Left Child's right child, nodeLC's Right Child
-
-    node->left = nodeLCRC;  
-
-    node->height_= 1 + max(Height(node->left_), Height(node->right_)); 
-    nodeLC->height_= 1 + max(Height(nodeLC->left_), Height(nodeLC->right_)); 
-
-    return nodeLC; 
-
-}*/
-
 shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
-{
-	//cout << "Right Rotation need to be executed" << endl;
-
-	//shared_ptr<AVLNode> temp = node->right_->parent_.lock();
-
-	//cout << "Key: " << node->key_ << endl;
+{ 
+   // shared_ptr<AVLNode> temp = node;
 
     parent->left_ = node->right_;
+
+    parent->parent_ = node;//->right_;
+
     node->right_ = parent;
 
+    node->parent_.reset();
+
+   // weak_ptr<AVLNode> child = node->right_; 
     parent->height_ = max(Height(parent->right_), Height(parent->left_) ) + 1;
     node->height_ = max(Height(node->left_), parent->height_) + 1;
    
@@ -390,10 +383,64 @@ shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLN
 	//return nullptr;
 }
 
+//parent = child;
 
+    //node->right_ = child;
+    
+    //node->ReplaceChild(node->right_, temp);
 
+/*
+int main(int argc, char** argv)
+{
 
+  ifstream file;
+  file.open(argv[1]);
+  nlohmann::json jsonObject;
+  // Store the contents filename into jsonObject
+  if (file.is_open()) {
+    file >> jsonObject;
+  }
+  string fileName;
+  fileName.append(argv[1]);
+    
+    //cout << fileName << endl; 
 
+    string dump = jsonObject.dump(4); 
+    //cout << dump << endl; 
+
+    //int numoperations = jsonObject["metadata"]["numOps"];
+    string opnum;  
+
+    AVL T; //Declaring AVL 
+
+    for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
+  { 
+    opnum = itr.key();
+
+    if(jsonObject[opnum]["operation"] != "DeleteMin")
+    {
+      int key = jsonObject[opnum]["key"];
+      if (jsonObject[opnum]["operation"]== "Delete")  
+        cout << "Deleteing:" << key << endl;
+        //T.Delete(key); 
+
+      else 
+        cout << "Inserting:" << key << endl;
+        //T.InsertH(key);   
+    }
+
+    else if (jsonObject[opnum]["operation"] == "DeleteMin")
+    {
+      cout << "DeleteMin" << endl;
+      //T.DeleteMin(); 
+    }
+  }
+      T.InsertH(15); 
+      T.InsertH(10);
+      T.InsertH(9);
+      cout << T.JSON() << endl; 
+
+}*/
 
 
 
@@ -401,15 +448,6 @@ shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLN
 int main(int argc, char** argv)
 {
 
-	/*std::ifstream file;
-	file.open(argv[1]);
-	nlohmann::json jsonObject;
-	// Store the contents filename into jsonObject
-	if (file.is_open()) {
-	  file >> jsonObject;
-	}
-	string fileName;
-	fileName.append(argv[1]);*/
     
     AVL T;
 
@@ -418,10 +456,19 @@ int main(int argc, char** argv)
     T.InsertH(12);
     T.InsertH(56);
     T.InsertH(2);*/
-
+    
+    T.InsertH(17);
     T.InsertH(15); 
-    T.InsertH(10); 
-    T.InsertH(9);
+    T.InsertH(10);
+    T.InsertH(11);
+    T.InsertH(8);
+    T.InsertH(6); 
+    T.InsertH(1);
+
+    //T.Delete(12);
+
+    //T.DeleteMin();
+
     //T.InsertH(22);
     //T.InsertH(12);
     //T.InsertH(55);

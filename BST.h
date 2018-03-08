@@ -21,7 +21,7 @@ class BSTNode {
 
  	int max(int leftH, int rightH); 
 
- //protected:
+ protected:
 	 int key_;
 	 int height_; 
 	 std::weak_ptr<BSTNode> parent_;
@@ -46,7 +46,7 @@ class BST {
  	//virtual void InsertH(int key); //creates node and calls recursive insert()
  	//virtual void insert(shared_ptr<BSTNode> node, shared_ptr<BSTNode> newNode); 
 
- //protected:
+ protected:
 	void DeleteLeaf(std::shared_ptr<BSTNode> currentNode);
 	int DeleteMin(std::shared_ptr<BSTNode> currentNode);
 
