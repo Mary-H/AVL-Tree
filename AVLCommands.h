@@ -46,17 +46,24 @@ class AVL {
  	bool empty() const;
  	int DeleteMin();
 
-    void InsertH(int key); //creates node and calls recursive insert(
+    void InsertH(int key); //creates node and calls recursive insert()
+    void DeleteMinH(); //Deletes Min element in tree, calls recursive delete min
+
 
  protected:
     void insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent); 
+    void deleteMin(std::shared_ptr<AVLNode> currentNode); 
+
  	int Height(shared_ptr<AVLNode> t);
 	void DeleteLeaf(std::shared_ptr<AVLNode> currentNode);
 	int DeleteMin(std::shared_ptr<AVLNode> currentNode);
 
 	// Balance Functions
 	shared_ptr<AVLNode> rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent);
+	shared_ptr<AVLNode> leftRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent); 
+	void rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent); 
 
+	//Members
  	std::shared_ptr<AVLNode> root_;
  	size_t size_;
 }; // class AVL
