@@ -417,7 +417,6 @@ void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) //Need to rebalence
   
   		if (lastNode != nullptr)
   		{
-  			cout << "Deleting the leaf" << endl; 
   			DeleteLeaf(currentNode);
   		}
 		else// deleting root
@@ -500,22 +499,85 @@ void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) //Need to rebalence
 
 void AVL::DeleteH(int key)
 {
-
-
+	deleteH(key, root_); 
 }
 
 void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 {
 
+	if (currentNode == nullptr)
+		return; //key not found
+	else
+	{
+
+		if (key < currentNode->key_)
+			deleteH(key, currentNode->left_); 
+		else
+	    {
+			if (key > currentNode->key_) 
+				deleteH(key, currentNode->right_); 
+			else    
+			{// key == to currentNode key 
+				cout << "Key: " << currentNode->key_ << endl;
+				if (currentNode->left_ == nullptr || currentNode ->right_ == nullptr ) // only one child, just swap
+				{
+					cout << "Key: " << currentNode->key_ << endl;
+					if (currentNode->left_ != nullptr)
+					{
+						shared_ptr<AVLNode> getParent = currentNode->parent_.lock();
+						currentNode->left_->parent_ = getParent;
+						getParent->right_ = currentNode->left_;
+						cout << " Deleting Node: " << currentNode->key_ << endl;
+						currentNode->parent_.reset();
+						currentNode->left_.reset();
+						cout << "New child: " << getParent->right_->key_ << endl;
+						//currentNode
+					}
+					else if (currentNode ->right_ != nullptr)
+					{
+						shared_ptr<AVLNode> getParent = currentNode->parent_.lock();
+						currentNode->right_->parent_ = getParent;
+						getParent->right_ = currentNode->left_;
+						cout << " Deleting Node: " << currentNode->key_ << endl;
+						currentNode->parent_.reset();
+						currentNode->right_.reset();
+					}
+					else
+					{	
+					    DeleteLeaf(currentNode);
+					}
+					
+				}
+				else // there are two kids 
+				{
+		        	shared_ptr<AVLNode> getMin = findMin(currentNode->left_);
+					currentNode->key_ = getMin->key_; // findMin(currentNode->right_)->key_;
+					deleteMin(currentNode->left_); 
+		        	//deleteH(currentNode->key_, currentNode->right_);
+		        	//currentNode = 
+
+				}
+		    }
+		}
+	}
+
 }
 
 
+shared_ptr<AVLNode> AVL::findMin(shared_ptr<AVLNode> node)
+{
+	 if( node == NULL)
+     	return node;
 
+     while( node->left_ != NULL )
+     	node = node->left_;
+     
+     return node;
+}
 
 
 int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, Delete, or DeleteMin 
 {
-
   ifstream file;
   file.open(argv[1]);
   nlohmann::json jsonObject;
@@ -553,7 +615,8 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
   }
 
   	  AVL T;
-      T.InsertH(20); 
+  	  // test for deleteMin
+      /*T.InsertH(20); 
       T.InsertH(22);
       T.InsertH(10);
       T.InsertH(5);
@@ -563,7 +626,7 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
       T.InsertH(25); 
       T.InsertH(4);
       T.InsertH(3);
-      T.InsertH(2);
+      T.InsertH(2);*/
 
       /*T.DeleteMinH(); // 2
       T.DeleteMinH();//3
@@ -576,6 +639,22 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
       T.DeleteMinH(); //20
       T.DeleteMinH(); // 22
       T.DeleteMinH();//25*/
+
+      // test for delete(key)
+
+      T.InsertH(10);
+      T.InsertH(34);
+      T.InsertH(60);
+      T.InsertH(5);
+      T.InsertH(3);
+      T.InsertH(60);
+      T.InsertH(70);
+      T.InsertH(9);
+
+      T.DeleteH(10);
+      T.DeleteH(5);
+      T.DeleteH(34);
+
 
 
 

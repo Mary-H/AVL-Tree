@@ -9,7 +9,6 @@ OPT=-O3 -std=c++14
 .PHONY: all
 all: BSTSanityCheck AVLCommands CreateData
 
-
 CreateData: CreateData.cxx json.hpp
 	$(CC) $(OPT) CreateData.cxx -o CreateData
 
@@ -17,7 +16,7 @@ CreateData: CreateData.cxx json.hpp
 AVLCommands: AVLCommands.o json.hpp 
 	$(CC) $(DEV) -o AVLCommands AVLCommands.o
 
-BSTSanityCheck: BSTSanityCheck.cxx BST.o
+BSTSanityCheck: BSTSanityCheck.cxx BST.o 
 	$(CC) $(DEV) BSTSanityCheck.cxx BST.o -o BSTSanityCheck
 
 #OBJECT 
