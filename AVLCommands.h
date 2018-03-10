@@ -57,6 +57,8 @@ class AVL {
  	int Height(shared_ptr<AVLNode> t);
 	void DeleteLeaf(std::shared_ptr<AVLNode> currentNode);
 	int DeleteMin(std::shared_ptr<AVLNode> currentNode);
+	void DeleteH(int key);
+	void deleteH(int key, shared_ptr<AVLNode> currentNode );
 
 	// Balance Functions
 	shared_ptr<AVLNode> rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent);

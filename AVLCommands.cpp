@@ -166,112 +166,6 @@ int AVL::DeleteMin(std::shared_ptr<AVLNode> currentNode) {
 	return result;
 }
 
-
-void AVL::DeleteMinH() 
-{
-	deleteMin(root_); 
-}
-
-void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) //Need to rebalence 
-{
-	shared_ptr<AVLNode> lastNode = currentNode->parent_.lock();
-
-	if(currentNode->left_ == nullptr)
-	{
-        shared_ptr<AVLNode> tempChild = currentNode->right_;
-  
-  		if (lastNode != nullptr)
-  		{
-  			cout << "Deleting the leaf" << endl; 
-  			DeleteLeaf(currentNode);
-  		}
-		else// deleting root
-		{
-			if (currentNode->right_) //Root has subtree
-			{
-				root_ = currentNode->right_; 
-				currentNode->parent_.reset();
-				size_--; 
-				return;
-			}
-			else //last node in tree
-			{
-				root_ = nullptr; 
-				size_--; 
-			}
-		}
-
-		if (tempChild != nullptr)
-		{		  
-		  lastNode->left_ = tempChild;
-		  tempChild->parent_ = lastNode;
-		}
-
-		return; 
-	}
-	else
-	{
-		deleteMin(currentNode->left_); 
-     
-		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
-    	currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);
-    	
- 
-		cout << "currentNode key: " << currentNode->key_ << " currentNode height: " << Height(currentNode) << endl; 
-		if (currentNode->bf_ == -2 )	// left heavy 
-		{
-			if (Height(currentNode->left_-> left_) > Height(currentNode->left_->right_)) //LeftLeft Case
-			{
-			   currentNode = rightRotation(currentNode->right_,currentNode); 
-			   currentNode->parent_ = lastNode;
-        	   lastNode->right_ = currentNode;
-			}
-			//else its a left right case 
-		}
-		if (currentNode->bf_ == 2) //Right heavy
-		{
-			cout <<"currentNode->bf_ == 2, Right Heavy" << endl; 
-			cout << " currentNode->right_-> right_ Height: " << Height(currentNode->right_->right_) << " >= " << Height(currentNode->right_->left_) << endl; 
-			if (Height(currentNode->right_->right_) >= Height(currentNode->right_->left_)) // bug was < or <= 
-			{
-
-			   cout <<"If statement executed: currentNode->bf_ == 2, leftRotation RR" << endl; 
-			   currentNode = leftRotation(currentNode->right_,currentNode); //RR case 
-			   cout << "currentNode key after leftRotation: " << currentNode->key_ << endl; 
-
-			   if (lastNode == nullptr)//its the root 
-					root_ = currentNode; 
-			   else
-				{
-					cout << "LAST NODE" << lastNode->key_ << endl; 
-		    		currentNode->parent_= lastNode;
-        			lastNode->left_ = currentNode; //last node's right changed to left, work for now
-				}
-        	}
-        	else // RightLeft case
-        	{
-        	    currentNode->right_ = rightRotation(currentNode->right_->left_, currentNode->right_); //node and parent 
-				currentNode->right_->parent_ = currentNode;
-
-				currentNode = leftRotation(currentNode->right_, currentNode);
-
-				if (currentNode->parent_.lock() == nullptr)//its the root 
-            		root_ = currentNode;
-            	else
-            	{
-            		currentNode->parent_ = lastNode;
-                	if (lastNode->HasRightChild() && lastNode->right_->key_ == currentNode->key_)
-        		 		lastNode->right_ = currentNode;
-        			else
-        		  		lastNode->left_ = currentNode;
-        		}
-        	}
-		}
-		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
-        currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);   
-    }
-}
-
 void AVL::DeleteLeaf(std::shared_ptr<AVLNode> currentNode) {
 	std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
 	if (parent == nullptr) {
@@ -462,11 +356,6 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 
 }
 
-
-
-
-
-
 shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
 { 
     parent->left_ = node->right_;
@@ -512,6 +401,116 @@ shared_ptr<AVLNode> AVL::leftRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNo
 
     return node;    
 }
+
+void AVL::DeleteMinH() // For AVL 
+{
+	deleteMin(root_); 
+}
+
+void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) //Need to rebalence 
+{
+	shared_ptr<AVLNode> lastNode = currentNode->parent_.lock();
+
+	if(currentNode->left_ == nullptr)
+	{
+        shared_ptr<AVLNode> tempChild = currentNode->right_;
+  
+  		if (lastNode != nullptr)
+  		{
+  			cout << "Deleting the leaf" << endl; 
+  			DeleteLeaf(currentNode);
+  		}
+		else// deleting root
+		{
+			if (currentNode->right_) //Root has subtree
+			{
+				root_ = currentNode->right_; 
+				currentNode->parent_.reset();
+				size_--; 
+				return;
+			}
+			else //last node in tree
+			{
+				root_ = nullptr; 
+				size_--; 
+			}
+		}
+		if (tempChild != nullptr)
+		{		  
+		  lastNode->left_ = tempChild;
+		  tempChild->parent_ = lastNode;
+		}
+		return; 
+	}
+	else
+	{
+		deleteMin(currentNode->left_); 
+     
+		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
+    	currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);
+    	
+		if (currentNode->bf_ == -2 )	// left heavy 
+		{
+			if (Height(currentNode->left_-> left_) > Height(currentNode->left_->right_)) //LeftLeft Case
+			{
+			   currentNode = rightRotation(currentNode->right_,currentNode); 
+			   currentNode->parent_ = lastNode;
+        	   lastNode->right_ = currentNode;
+			}
+			//else its a left right case 
+		}
+		if (currentNode->bf_ == 2) //Right heavy
+		{
+			if (Height(currentNode->right_->right_) >= Height(currentNode->right_->left_)) // bug was < or <= 
+			{
+			   currentNode = leftRotation(currentNode->right_,currentNode); //RR case 
+			  
+			   if (lastNode == nullptr)//its the root 
+					root_ = currentNode; 
+			   else
+				{
+		    		currentNode->parent_= lastNode;
+        			lastNode->left_ = currentNode; //last node's right changed to left, work for now
+				}
+        	}
+        	else // RightLeft case
+        	{
+        	    currentNode->right_ = rightRotation(currentNode->right_->left_, currentNode->right_); //node and parent 
+				currentNode->right_->parent_ = currentNode;
+
+				currentNode = leftRotation(currentNode->right_, currentNode);
+
+				if (currentNode->parent_.lock() == nullptr)//its the root 
+            		root_ = currentNode;
+            	else
+            	{
+            		currentNode->parent_ = lastNode;
+                	if (lastNode->HasRightChild() && lastNode->right_->key_ == currentNode->key_)
+        		 		lastNode->right_ = currentNode;
+        			else
+        		  		lastNode->left_ = currentNode;
+        		}
+        	}
+		}
+		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
+        currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);   
+    }
+}
+
+
+void AVL::DeleteH(int key)
+{
+
+
+}
+
+void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
+{
+
+}
+
+
+
 
 
 int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, Delete, or DeleteMin 
