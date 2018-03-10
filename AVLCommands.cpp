@@ -776,13 +776,13 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
       T.DeleteH(50);*/
 
 
-      T.InsertH(4);
-      T.InsertH(50);
-      T.InsertH(77);
-      T.InsertH(88);
-      T.InsertH(5);
+ //     T.InsertH(4);
+ //     T.InsertH(50);
+ //     T.InsertH(77);
+ //     T.InsertH(88);
+ //     T.InsertH(5);
 
-      T.DeleteH(50);
+ //     T.DeleteH(50);
 
 
 
@@ -817,6 +817,15 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
       T.DeleteMinH(); //98
       T.DeleteMinH(); //124
       T.DeleteMinH(); //234*/
+
+
+    T.InsertH(50);
+    T.InsertH(6);
+    T.InsertH(10);  
+    T.InsertH(4);  
+    T.InsertH(55); 
+    T.InsertH(54);
+    T.InsertH(60);
 
       cout << T.JSON() << endl; 
 
