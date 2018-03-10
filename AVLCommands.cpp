@@ -550,9 +550,16 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 				}
 				else // there are two kids 
 				{
-		        	shared_ptr<AVLNode> getMin = findMin(currentNode->left_);
+		        	shared_ptr<AVLNode> getMin = findMin(currentNode->right_);
 					currentNode->key_ = getMin->key_; // findMin(currentNode->right_)->key_;
-					deleteMin(currentNode->left_); 
+					if (currentNode->left_)
+					{
+						getMin->left_ = currentNode->left_; 
+						currentNode->left_->parent_ = getMin; 
+
+						//getMin->left_->parent_ = currentNode->parent_.lock(); 
+					}
+					deleteMin(currentNode->right_); 
 		        	//deleteH(currentNode->key_, currentNode->right_);
 		        	//currentNode = 
 
