@@ -24,6 +24,8 @@ using std::weak_ptr;
 /*
 *  Next things to achieve:
 *  1 - Clean up the code
+*      - one way to make it more readable is to implement the predefined functions
+*        e.i node->HasRightChild()... whenever its necessary
 *  2 - Update heights whenever a child is swapped 
 *      - DeleteH is a function that we have not cheked for height updating
 *  3 - Create the if statements for balancing based on balance factor
@@ -350,18 +352,21 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 		}
 		else //RightLeft case
 		{
+			cout << "Here Swapping: " << node->right_->key_ << endl; 
 			node->right_ = rightRotation(node->right_->left_, node->right_);
-			node->right_->parent_ = node;
+			cout << "Now right: " << node->right_->key_ << endl;
+			cout << "following: " << node->right_->right_->key_ << endl;
+			//node->right_->parent_ = node;
 			node = leftRotation(node->right_, node);
 			if (parent == nullptr)//its the root 
             	root_ = node;
             else
             {
             	node->parent_ = parent;
-                if (parent->HasRightChild() && parent->right_->key_ == node->key_)
-        		  parent->right_ = node;
-        		else
+                if (parent->HasRightChild() && parent->left_->key_ == node->key_)
         		  parent->left_ = node;
+        		else
+        		  parent->right_ = node;
             }
 		}
     }
@@ -493,14 +498,22 @@ void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) //Need to rebalence
 
 				if (currentNode->parent_.lock() == nullptr)//its the root 
             		root_ = currentNode;
-            	else
+            	/*else
             	{
             		currentNode->parent_ = lastNode;
                 	if (lastNode->HasRightChild() && lastNode->right_->key_ == currentNode->key_)
         		 		lastNode->right_ = currentNode;
         			else
         		  		lastNode->left_ = currentNode;
-        		}
+        		}*/
+        		else
+                {
+	            	currentNode->parent_ = parent;
+	                if (parent->HasRightChild() && parent->left_->key_ == currentNode->key_)
+	        		  parent->left_ = currentNode;
+	        		else
+	        		  parent->right_ = currentNode;
+                }
         	}
 		}
 		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
@@ -665,14 +678,22 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 
 			if (currentNode->parent_.lock() == nullptr)//its the root 
         		root_ = currentNode;
-        	else
+        	/*else
         	{
         		currentNode->parent_ = lastNode;
             	if (lastNode->HasRightChild() && lastNode->right_->key_ == currentNode->key_)
     		 		lastNode->right_ = currentNode;
     			else
     		  		lastNode->left_ = currentNode;
-    		}
+    		}*/
+    		else
+            {
+            	node->parent_ = parent;
+                if (parent->HasRightChild() && parent->left_->key_ == node->key_)
+        		  parent->left_ = node;
+        		else
+        		  parent->right_ = node;
+            }
     	}
 	}
 	currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
