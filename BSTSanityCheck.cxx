@@ -8,8 +8,8 @@
 
 //#include "AVLCommands.h"
 
-#define SAMPLE_SIZE 1000
-#define NUM_TESTS 10000
+#define SAMPLE_SIZE 10
+#define NUM_TESTS 100
 
 int main() {
 
@@ -31,12 +31,14 @@ int main() {
 		// On size_t usage here: https://stackoverflow.com/questions/131803/unsigned-int-vs-size-t
 		for (size_t i = 0; i < SAMPLE_SIZE; i++) {
 			if (op(rng) == 0 && !T.empty()) {
-				T.Delete(sampleData.back());
+				//T.DeleteH(sampleData.back());
+				cout << "Deleting: " << sampleData.back() << endl;
 				sampleData.pop_back();
 			} else {			
 				// Add random integer to array
 				int x = unif(rng);
-				T.Insert(x);
+				cout << "Insert: " << x << endl; 
+				//T.InsertH(x);
 				sampleData.push_back(x);
 			}
 		}

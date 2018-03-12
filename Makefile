@@ -16,6 +16,10 @@ CreateData: CreateData.cxx json.hpp
 AVLCommands: AVLCommands.o json.hpp 
 	$(CC) $(DEV) -o AVLCommands AVLCommands.o
 
+
+#AVLCommands: AVLCommands.cpp json.hpp 
+#	$(CC) $(DEV) -c AVLCommands.cpp
+
 BSTSanityCheck: BSTSanityCheck.cxx BST.o 
 	$(CC) $(DEV) BSTSanityCheck.cxx BST.o -o BSTSanityCheck
 
