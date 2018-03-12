@@ -190,8 +190,10 @@ void AVL::DeleteLeaf(std::shared_ptr<AVLNode> currentNode) {
 		size_--; assert(size_ == 0);
 	} else {
 		if (parent->right_ == currentNode) {
+			currentNode->parent_.reset();
 			parent->right_ = nullptr;
 		} else if (parent->left_ == currentNode) {
+			currentNode->parent_.reset();
 			parent->left_ = nullptr;
 		} else {
 			std::cerr << "AVL::DeleteLeaf Error: inconsistent state\n";
@@ -294,7 +296,9 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
        }
      	else
     	{
+    	  cout << "Inserting: " << key << endl;
           parent->right_ = std::make_shared<AVLNode>(key, parent);
+          cout << "Going farther " << endl;
         }
         //cout << parent->left_->key_ << endl; //when this line is commented, the height checking does not show
       //  cout << "About to return " << endl;
@@ -313,7 +317,6 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
     	insert(key, node->right_, node);
     	rebalence(key, node, parent);    	
     }
-    
    // cout << "now above height cheking: " << endl;
     node->height_ = 1 + max(Height(node->left_), Height(node->right_)); 
     node->bf_ = Height(node->right_) - Height(node->left_);
@@ -323,12 +326,11 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
 
 void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
 {
-	/*if (parent)
-		cout << "Rebalence: " << parent->key_;
-	cout << " Node key: " << node->key_ << endl; */
+	cout << "Entering rebalance " << endl;
+	cout << node->key_ << " To its right " << node->right_->key_ << endl;
 	if (Height(node->right_) - Height(node->left_) == -2) //LeftLeft or LeftRight case, tree left heavy
     {
-		if (key < node->left_->key_)	//Single rotation, LeftLeft case
+		if (node->left_ && key < node->left_->key_)	//Single rotation, LeftLeft case
 		{
 			node = rightRotation(node->left_, node);
 			if (parent == nullptr)//its the root 
@@ -365,7 +367,7 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
     }
 	if (Height(node->right_) - Height(node->left_) == 2) //RightRight or RightLeft case
     {
-		if (key > node->right_->key_) //RR case 
+		if (node->right_ && key > node->right_->key_) //RR case 
 		{
 			node = leftRotation(node->right_,node); 
 			if (parent == nullptr)//its the root 
@@ -469,14 +471,16 @@ void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode)
   
   		if (lastNode != nullptr)
   		{
-  			DeleteLeaf(currentNode);
+  			//DeleteLeaf(currentNode);
+  			currentNode
   		}
 		else// Deleting Root
 		{
 			if (currentNode->right_) //Root has subtree
 			{
-				root_ = currentNode->right_; 
 				currentNode->parent_.reset();
+				//currentNode->right_.reset();
+				root_ = currentNode->right_;
 				size_--; 
 				return;
 			}
@@ -616,7 +620,15 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 					}
 					else
 					{	
-					    DeleteLeaf(currentNode);
+						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
+						if (parent->right_ == currentNode)
+							parent->right_.reset();
+						else
+							parent->left_.reset();
+
+						currentNode->parent_.reset();
+						currentNode = nullptr;
+					    //DeleteLeaf(currentNode);
 					    return;
 					}
 					
@@ -679,7 +691,7 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 	{
 		if (Height(currentNode->right_->right_) >= Height(currentNode->right_->left_)) // bug was < or <= 
 		{
-		   cout << currentNode->right_->key_ << endl;
+		  // cout << currentNode->right_->key_ << endl;
 		   currentNode = leftRotation(currentNode->right_,currentNode); //RR case 
 		   if (lastNode == nullptr)//its the root 
 				root_ = currentNode; 
@@ -738,17 +750,17 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
   file.open(argv[1]);
   nlohmann::json jsonObject;
   // Store the contents filename into jsonObject
- /* if (file.is_open()) {
+  if (file.is_open()) {
     file >> jsonObject;
   }
-  string fileName;*/
+  string fileName;
   fileName.append(argv[1]);
     
   string opnum;  
 
   AVL T;
 
-  for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
+ /* for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
   { 
     opnum = itr.key();
 
@@ -767,7 +779,7 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
     {
 		T.DeleteMinH(); 
     }
-  }
+  }*/
 
   	  
   	  // test for deleteMin
@@ -980,16 +992,16 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
       T.DeleteH(30);
       T.DeleteH(33);*/
 
-      /*T.InsertH(1848059612);
-      T.InsertH(560403907);
-      T.InsertH(-828395189);
-      T.InsertH(-16171062);
-      T.InsertH(2087080370);
-      T.InsertH(-1109683407);
-      T.InsertH(-483062005);
-      T.InsertH(-457797200);
-      T.InsertH(-361906119);
-      T.InsertH(598693431);*/
+      T.InsertH(-64929822);
+      T.InsertH(2127432579);
+      T.InsertH(-177173015);
+      T.DeleteH(-177173015);
+      T.DeleteMinH();
+      //T.InsertH(-1947211644);
+     // T.InsertH(1664098479);
+     // T.InsertH(1330587443);
+     /* T.InsertH(-1273506527);
+      T.InsertH(-1597360849);*/
 
       cout << T.JSON() << endl; 
 
