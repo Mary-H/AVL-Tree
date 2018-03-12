@@ -21,19 +21,6 @@ using std::make_shared;
 using std::weak_ptr;
 
 
-/*
-*  Next things to achieve:
-*  1 - Clean up the code
-*      - one way to make it more readable is to implement the predefined functions
-*        e.i node->HasRightChild()... whenever its necessary
-*  2 - Update heights whenever a child is swapped 
-*      - DeleteH is a function that we have not cheked for height updating
-*  3 - Create the if statements for balancing based on balance factor
-*      - That's the reason why we have the bf_ field, use it
-*  4 - Start working on BSTSanityCkeck.cxx
-*/
-
-
 AVLNode::AVLNode(int key) :
 	key_(key),
 	parent_(std::weak_ptr<AVLNode>()),
@@ -58,8 +45,6 @@ bool AVLNode::HasRightChild() const {
 	return right_ != nullptr;
 }
 
-
-
 void AVLNode::DeleteChild(std::shared_ptr<AVLNode> v) {
 	if (left_ == v) {
 		left_ = nullptr;
@@ -75,10 +60,14 @@ void AVLNode::ReplaceChild(std::shared_ptr<AVLNode> v, std::shared_ptr<AVLNode> 
 	if (left_ == u || right_ == u) {
 		std::cerr << "AVLNode::ReplaceChild Error: child passed as replacement\n";
 	}
+	cout << " left_ == v" << endl; 
 	if (left_ == v) {
+		cout << " about to set left_ = u; " << endl; 
 		left_ = u;
 		u->parent_ = v->parent_;
+	cout << "right_ == v" << endl; 
 	} else if (right_ == v) {
+		cout << "About to set right_ == v" << endl; 
 		right_ = u;
 		u->parent_ = v->parent_;
 	} else {
@@ -186,15 +175,21 @@ void AVL::DeleteLeaf(std::shared_ptr<AVLNode> currentNode) {
 	std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
 	if (parent == nullptr) {
 		// Delete root
+		root_->left_.reset();
+		root_->right_.reset(); 
 		root_ = nullptr;
 		size_--; assert(size_ == 0);
 	} else {
 		if (parent->right_ == currentNode) {
 			currentNode->parent_.reset();
 			parent->right_ = nullptr;
+			currentNode->left_.reset();
+			currentNode->right_.reset();
 		} else if (parent->left_ == currentNode) {
 			currentNode->parent_.reset();
 			parent->left_ = nullptr;
+			currentNode->left_.reset();
+			currentNode->right_.reset();
 		} else {
 			std::cerr << "AVL::DeleteLeaf Error: inconsistent state\n";
 		}
@@ -285,39 +280,30 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
 {
     if (node == nullptr)
     {
-       if (parent == nullptr)
-       		cout << "ERROR, SEGFAULT" << endl; 
 
        if (key < parent->key_)
        {
-       	 // cout << "parent key: "  << parent->key_ << "Inserting " << key << endl;
     	  parent->left_ = std::make_shared<AVLNode>(key, parent); 
-    	 // cout << "After segfaut" << endl;
        }
-     	else
+       else
     	{
-    	  cout << "Inserting: " << key << endl;
           parent->right_ = std::make_shared<AVLNode>(key, parent);
-          cout << "Going farther " << endl;
         }
-        //cout << parent->left_->key_ << endl; //when this line is commented, the height checking does not show
-      //  cout << "About to return " << endl;
+     
         size_++;
     	return; 
     }
     else if (key < node->key_)//insert on Left side 
     {
-   // 	cout << "key < node->key_: Node key: "  << node->key_ << "Inserting " << key << endl;
     	insert(key, node->left_, node);
     	rebalence(key, node, parent); 
     }
     else if (key > node->key_)// insert on right side
     {	
-   // 	cout << "key > node->key_: Node key: "  << node->key_ << "Inserting " << key << endl;
     	insert(key, node->right_, node);
     	rebalence(key, node, parent);    	
     }
-   // cout << "now above height cheking: " << endl;
+
     node->height_ = 1 + max(Height(node->left_), Height(node->right_)); 
     node->bf_ = Height(node->right_) - Height(node->left_);
     
@@ -326,8 +312,7 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
 
 void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
 {
-	cout << "Entering rebalance " << endl;
-	cout << node->key_ << " To its right " << node->right_->key_ << endl;
+	
 	if (Height(node->right_) - Height(node->left_) == -2) //LeftLeft or LeftRight case, tree left heavy
     {
 		if (node->left_ && key < node->left_->key_)	//Single rotation, LeftLeft case
@@ -338,7 +323,6 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 			else
 			{
 				node->parent_ = parent;
-			//	parent->left_ = node;
         		if (parent->HasRightChild() && parent->right_ == node->right_)  
         		  parent->right_ = node;
         		else
@@ -354,10 +338,6 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 		    else
 		    {
 		    	node->parent_ = parent;
-                /*if (parent->HasRightChild() && parent->right_->key_ == node->key_)
-        		  parent->right_ = node;
-        		else
-        		  parent->left_ = node;*/
         		if (parent->HasRightChild() && parent->right_ == node->right_)  
         		  parent->right_ = node;
         		else
@@ -375,7 +355,6 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 			else
 			{
 				node->parent_ = parent;
-        		//parent->right_ = node;
         		if (parent->HasRightChild() && parent->right_ == node->left_)  
         		  parent->right_ = node;
         		else
@@ -384,22 +363,14 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 		}
 		else //RightLeft case
 		{
-			//cout << "Parent: " << parent->key_ << endl;
-			//cout << "Here Swapping: " << node->right_->key_ << endl; 
 			node->right_ = rightRotation(node->right_->left_, node->right_);
-		//	cout << "Now right: " << node->right_->key_ << endl;
-	///		cout << "following: " << node->right_->right_->key_ << endl;
-			//node->right_->parent_ = node;
 			node = leftRotation(node->right_, node);
 			if (parent == nullptr)//its the root 
             	root_ = node;
             else
             {
             	node->parent_ = parent;
-                //if (parent->HasRightChild() && parent->left_->key_ == node->key_)
-                //  parent->left_ = node;
-        		//else
-        		//  parent->right_ = node;
+               
         		if (parent->HasRightChild() && parent->right_ == node->left_)  
         		  parent->right_ = node;
         		else
@@ -439,7 +410,6 @@ shared_ptr<AVLNode> AVL::leftRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNo
 	if (node->left_)
 	{
 		node->left_->parent_ = parent; 
-	//	node->left_.reset();
 	}
 
     parent->parent_ = node;				//Update parent's weak ptr connection to node
@@ -458,11 +428,18 @@ shared_ptr<AVLNode> AVL::leftRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNo
 
 void AVL::DeleteMinH() // For AVL 
 {
-	deleteMin(root_); 
+	shared_ptr<AVLNode> node = findMin(root_); 
+	assert(node != nullptr); 
+	if (node->key_ == root_->key_)
+		deleteH(node->key_, root_);
+
+	deleteH(node->key_, root_->left_); 
+
 }
 
-void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) 
+void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) //not using this function anymore
 {
+	/*
 	shared_ptr<AVLNode> lastNode = currentNode->parent_.lock();
 
 	if(currentNode->left_ == nullptr)
@@ -471,17 +448,20 @@ void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode)
   
   		if (lastNode != nullptr)
   		{
-  			//DeleteLeaf(currentNode);
-  			currentNode
+  			DeleteLeaf(currentNode);
+  			//currentNode
   		}
 		else// Deleting Root
 		{
+			
 			if (currentNode->right_) //Root has subtree
 			{
-				currentNode->parent_.reset();
-				//currentNode->right_.reset();
-				root_ = currentNode->right_;
+				currentNode->parent_.reset(); 
+				
 				size_--; 
+				currentNode->left_.reset();
+				root_ = root_->right_;
+				
 				return;
 			}
 			else //last node in tree
@@ -575,6 +555,7 @@ void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode)
 		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
         currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);   
     }
+  */
 }
 
 
@@ -590,7 +571,6 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 		return; //key not found
 	else
 	{
-
 		if (key < currentNode->key_)
 			deleteH(key, currentNode->left_); 
 		else
@@ -604,22 +584,37 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 					if (currentNode->left_ != nullptr)
 					{
 						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
-				        parent->ReplaceChild(currentNode, currentNode->left_);
+						if (parent != nullptr)
+						{
+							cout << "about to segfault, replace child " << endl; 
+				        	parent->ReplaceChild(currentNode, currentNode->left_);
+				        }
+				        else//Root case
+						{
+							root_= currentNode->left_; 
+						}
 				        currentNode->parent_.reset();
 						currentNode->left_.reset();
                         size_--;
 					}
 					else if (currentNode->right_ != nullptr)
 					{
-						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
-				        parent->ReplaceChild(currentNode, currentNode->right_);
+						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock(); 
+						if (parent != nullptr)
+						{
+							cout << "about to segfault, replace child " << endl; 
+				        	parent->ReplaceChild(currentNode, currentNode->right_);
+				        }
+				        else//Root cases
+						{
+							root_= currentNode->right_; 
+						}
 						currentNode->parent_.reset();
 						currentNode->right_.reset();
-
 					    size_--;
 					}
 					else
-					{	
+					{	// deleting a leaf 
 						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
 						if (parent->right_ == currentNode)
 							parent->right_.reset();
@@ -629,6 +624,7 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 						currentNode->parent_.reset();
 						currentNode = nullptr;
 					    //DeleteLeaf(currentNode);
+					    size_--; 
 					    return;
 					}
 					
@@ -651,12 +647,10 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 	currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
 	currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);
 
-	if (Height(currentNode->right_) - Height(currentNode->left_) == -2)//(currentNode->bf_ == - 2)  // left heavy 
+	if (Height(currentNode->right_) - Height(currentNode->left_) <= -2)//(currentNode->bf_ == - 2)  // left heavy 
 	{
 	    if (Height(currentNode->left_-> left_) > Height(currentNode->left_->right_)) //LeftLeft Case
 	    {
-
-      
             currentNode = rightRotation(currentNode->left_, currentNode);
 			if (lastNode == nullptr)  // its the root 
 				root_ = currentNode;
@@ -691,7 +685,6 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 	{
 		if (Height(currentNode->right_->right_) >= Height(currentNode->right_->left_)) // bug was < or <= 
 		{
-		  // cout << currentNode->right_->key_ << endl;
 		   currentNode = leftRotation(currentNode->right_,currentNode); //RR case 
 		   if (lastNode == nullptr)//its the root 
 				root_ = currentNode; 
@@ -725,285 +718,66 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 	}
 	currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
     currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);   
-
 }
 
 
 shared_ptr<AVLNode> AVL::findMin(shared_ptr<AVLNode> node)
 {
-	 if( node == NULL)
+	if( node == NULL)
      	return node;
 
      while( node->left_ != NULL )
      {
-
      	node = node->left_;
-       // cout << "Inside while: " << node->key_ << endl;
      }
      return node;
 }
 
 
+
 int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, Delete, or DeleteMin 
 {
-  ifstream file;
-  file.open(argv[1]);
-  nlohmann::json jsonObject;
-  // Store the contents filename into jsonObject
-  if (file.is_open()) {
-    file >> jsonObject;
-  }
-  string fileName;
-  fileName.append(argv[1]);
-    
-  string opnum;  
+	ifstream file;
+	file.open(argv[1]);
+	nlohmann::json jsonObject;
+	// Store the contents filename into jsonObject
+	if (file.is_open()){
+		file >> jsonObject;
+	}
+	string fileName;
+	fileName.append(argv[1]);
+	    
+	string opnum;  
 
-  AVL T;
+	AVL T; //Declaring AVL object
 
- /* for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
-  { 
-    opnum = itr.key();
+	for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
+	{ 
+	    opnum = itr.key();
 
-    if(jsonObject[opnum]["operation"] != "DeleteMin")
-    {
-      int key = jsonObject[opnum]["key"];
-      if (jsonObject[opnum]["operation"]== "Delete")  
-        	T.DeleteH(key); 
-      else 
-      {
-        	T.InsertH(key);   
-      }
-    }
+	    if(jsonObject[opnum]["operation"] != "DeleteMin")
+	    {
+		    int key = jsonObject[opnum]["key"];
+		   	if (jsonObject[opnum]["operation"]== "Delete")  
+		        	T.DeleteH(key); 
+		    else 	   
+		        	T.InsertH(key);   
+	    }
+	    else if (jsonObject[opnum]["operation"] == "DeleteMin")
+	    {
+			T.DeleteMinH(); 
+	    }
+	}
 
-    else if (jsonObject[opnum]["operation"] == "DeleteMin")
-    {
-		T.DeleteMinH(); 
-    }
-  }*/
-
-  	  
-  	  // test for deleteMin
-      /*T.InsertH(20); 
-      T.InsertH(22);
-      T.InsertH(10);
-      T.InsertH(5);
-      T.InsertH(15);
-      T.InsertH(13);
-      T.InsertH(14);
-      T.InsertH(25); 
-      T.InsertH(4);
-      T.InsertH(3);
-      T.InsertH(2);*/
-
-      /*T.DeleteMinH(); // 2
-      T.DeleteMinH();//3
-      T.DeleteMinH(); //4
-      T.DeleteMinH(); // 5
-      T.DeleteMinH(); //10
-      T.DeleteMinH(); //13
-      T.DeleteMinH(); //14
-      T.DeleteMinH(); // 15
-      T.DeleteMinH(); //20
-      T.DeleteMinH(); // 22
-      T.DeleteMinH();//25*/
-
-      // test for delete(key)
-
-
-      /// goood for testing *******
-     /* T.InsertH(6);
-      T.InsertH(4);
-      T.InsertH(50);
-      T.InsertH(7);
-      T.InsertH(5);
-      T.InsertH(71);
-      T.InsertH(45);
-      T.InsertH(34);
-
-      T.DeleteH(50);*/
-
-
- //     T.InsertH(4);
- //     T.InsertH(50);
- //     T.InsertH(77);
- //     T.InsertH(88);
- //     T.InsertH(5);
-
- //     T.DeleteH(50);
-
-
-
-     // T.DeleteH(6);
-      //T.DeleteH(4);
-
-
-
-
-      // Right Left Test
-
-      /*T.InsertH(32);
-      T.InsertH(45);
-      T.InsertH(34);
-      T.InsertH(67);
-      T.InsertH(98);
-      T.InsertH(124);
-      T.InsertH(5);
-      T.InsertH(25); 
-      T.InsertH(29); 
-      T.InsertH(234);
-      T.InsertH(1);
-
-      T.DeleteMinH(); //1
-      T.DeleteMinH(); //5
-      T.DeleteMinH(); //remove 25 
-      T.DeleteMinH(); //29 , left rotate working 
-      T.DeleteMinH(); //32
-      T.DeleteMinH(); // 34
-      T.DeleteMinH(); // 45
-      T.DeleteMinH(); //67 
-      T.DeleteMinH(); //98
-      T.DeleteMinH(); //124
-      T.DeleteMinH(); //234*/
-
-
-   /* T.InsertH(50);
-    T.InsertH(6);
-    T.InsertH(10);  
-    T.InsertH(4);  
-    T.InsertH(55); 
-    T.InsertH(54);
-    T.InsertH(60);*/
-
-     // SEGFAULT INSERTION
-
-    
-   /*   T.InsertH(15);
-      T.InsertH(10);
-     
-      T.InsertH(25);
-      T.InsertH(20);
-      T.InsertH(9);    // WHITHOUT (9) RIGHT LEFT ROTATION
-      T.InsertH(13);
-      T.InsertH(30);
-      T.InsertH(12);
-      T.InsertH(50);
-
-      
-      T.DeleteH(15); 
-      T.DeleteH(25); 
-      T.InsertH(70); 
-      
-      T.DeleteH(13);
-    //  T.DeleteH(30);
-    //  T.InsertH(30);
-
-      T.InsertH(11);  */
-      
-/*      T.InsertH(20);
-      T.InsertH(50);
-      T.InsertH(10);
-      T.InsertH(13);
-      T.InsertH(70);
-      T.InsertH(40);
-      T.InsertH(9);
-      T.InsertH(12);
-    //  T.InsertH(14);              
-
-      T.DeleteH(13);
-      T.InsertH(11);             */
-      
-     // T.DeleteH(12);
-     // T.InsertH(14);
-
-
-      //T.InsertH(13);
-
- //     T.InsertH(4);
- //     T.InsertH(50);
-
-
-
-      // NOT WORKING RIGHT LEFT
-    /*  T.InsertH(20);
-      T.InsertH(10);
-      T.InsertH(50);
-      T.InsertH(30);
-      T.InsertH(12);
-      T.InsertH(70);
-      T.InsertH(11);*/
-
-      // WORKING RIGHT LEFT
-     /* T.InsertH(20);
-      T.InsertH(11);
-      T.InsertH(50);
-      T.InsertH(10);
-      T.InsertH(70);
-      T.InsertH(10);
-      T.InsertH(60);*/
-
-
-
-      //T.DeleteH(13);
-     // T.InsertH(11);
-      //T.InsertH(40);
-      //T.InsertH(50);
-
-  /*    T.InsertH(15);
-      T.InsertH(10);
-      T.InsertH(25);
-      T.InsertH(20);
-      T.InsertH(9);
-      T.InsertH(13);
-      T.InsertH(30);
-      T.InsertH(12);
-      T.InsertH(50);
-
-      
-      //T.DeleteH(15); 
-     // T.DeleteH(25); 
-      T.InsertH(70); 
-
-     // T.DeleteH(13);
-      T.InsertH(11);
-      T.InsertH(14);
-
-      T.DeleteMinH();
-      T.DeleteMinH();
-      T.DeleteMinH();
-      T.DeleteMinH();
-      T.DeleteMinH();*/
-
-
-     /* T.InsertH(15);
-      T.InsertH(30);
-      T.InsertH(11);
-      T.InsertH(12);
-      T.DeleteH(15);
-      T.InsertH(9);
-      T.InsertH(33);
-      T.InsertH(25);
-      T.DeleteH(11);
-      T.DeleteMinH();
-      T.InsertH(23);
-      T.DeleteH(23);
-      T.InsertH(26);
-      T.InsertH(40);
-      T.InsertH(60);
-      T.DeleteH(30);
-      T.DeleteH(33);*/
-
-      T.InsertH(-64929822);
+	  /*T.InsertH(-64929822);
       T.InsertH(2127432579);
       T.InsertH(-177173015);
-      T.DeleteH(-177173015);
+      //T.DeleteH(-177173015);
+      T.DeleteH(2127432579);
       T.DeleteMinH();
-      //T.InsertH(-1947211644);
-     // T.InsertH(1664098479);
-     // T.InsertH(1330587443);
-     /* T.InsertH(-1273506527);
-      T.InsertH(-1597360849);*/
-
-      cout << T.JSON() << endl; 
+      T.InsertH(-1947211644);
+      T.InsertH(10);*/
+    cout << T.JSON() << endl; 
 
 }
 

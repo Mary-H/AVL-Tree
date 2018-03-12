@@ -30,8 +30,7 @@ int main(int argc, char** argv) {
 	for (size_t op = 1; op <= numOps; op++) {
 		int operation = opDist(rng);
 		int opDigits = (int) floor(log10((double) op)) + 1;
-		std::string opKey = std::string(totalZeros - opDigits, '0')
-			.append(std::to_string(op));
+		std::string opKey = std::string(totalZeros - opDigits, '0').append(std::to_string(op));
 		if (operation == 0 && !keys.empty()) {
 			result[opKey] = nlohmann::json();
 			result[opKey]["operation"] = "Delete";
