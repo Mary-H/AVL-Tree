@@ -616,16 +616,27 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 					else
 					{	// deleting a leaf 
 						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
-						if (parent->right_ == currentNode)
-							parent->right_.reset();
-						else
-							parent->left_.reset();
+						if (parent)
+						{
+							if (parent->right_ == currentNode)
+								parent->right_.reset();
+							else
+								parent->left_.reset();
 
-						currentNode->parent_.reset();
-						currentNode = nullptr;
-					    //DeleteLeaf(currentNode);
-					    size_--; 
-					    return;
+							currentNode->parent_.reset();
+							currentNode = nullptr;
+						    //DeleteLeaf(currentNode);
+						    size_--; 
+						    return;
+						}
+						else
+					    {
+					    	root_->left_.reset();
+		                    root_->right_.reset(); 
+	                    	root_ = nullptr;
+	                    	size_--; assert(size_ == 0);
+					    }
+
 					}
 					
 				}
@@ -751,7 +762,7 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
 
 	AVL T; //Declaring AVL object
 
-	for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
+	/*for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
 	{ 
 	    opnum = itr.key();
 
@@ -767,16 +778,16 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
 	    {
 			T.DeleteMinH(); 
 	    }
-	}
+	}*/
 
-	  /*T.InsertH(-64929822);
+	  T.InsertH(-64929822);
       T.InsertH(2127432579);
       T.InsertH(-177173015);
-      //T.DeleteH(-177173015);
+      T.DeleteH(-177173015);
       T.DeleteH(2127432579);
       T.DeleteMinH();
       T.InsertH(-1947211644);
-      T.InsertH(10);*/
+      T.InsertH(10);
     cout << T.JSON() << endl; 
 
 }
