@@ -17,8 +17,6 @@ class AVLNode {
  	void DeleteChild(std::shared_ptr<AVLNode> v);
  	void ReplaceChild(std::shared_ptr<AVLNode> v, std::shared_ptr<AVLNode> u);
 
- 	//int Height(shared_ptr<AVLNode> t);
-
  	int max(int leftH, int rightH); 
 
 
@@ -47,8 +45,8 @@ class AVL {
  	int DeleteMin();
 
     void InsertH(int key); //creates node and calls recursive insert()
-    void DeleteMinH(); //Deletes Min element in tree, calls recursive delete min
-    void DeleteH(int key);
+    void DeleteMinH(); //Deletes Min element in tree, calls on deleteH
+    void DeleteH(int key); //calls on deleteH
  protected:
     void insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent); 
     void deleteMin(std::shared_ptr<AVLNode> currentNode);  

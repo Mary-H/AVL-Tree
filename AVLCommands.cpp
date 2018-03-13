@@ -60,14 +60,10 @@ void AVLNode::ReplaceChild(std::shared_ptr<AVLNode> v, std::shared_ptr<AVLNode> 
 	if (left_ == u || right_ == u) {
 		std::cerr << "AVLNode::ReplaceChild Error: child passed as replacement\n";
 	}
-	cout << " left_ == v" << endl; 
 	if (left_ == v) {
-		cout << " about to set left_ = u; " << endl; 
 		left_ = u;
 		u->parent_ = v->parent_;
-	cout << "right_ == v" << endl; 
 	} else if (right_ == v) {
-		cout << "About to set right_ == v" << endl; 
 		right_ = u;
 		u->parent_ = v->parent_;
 	} else {
@@ -303,6 +299,11 @@ void AVL::insert(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
     	insert(key, node->right_, node);
     	rebalence(key, node, parent);    	
     }
+    else
+    {
+    	std::cerr << "AVLNode::Duplicate Error: duplicate node\n";
+		exit(EXIT_FAILURE);
+    }
 
     node->height_ = 1 + max(Height(node->left_), Height(node->right_)); 
     node->bf_ = Height(node->right_) - Height(node->left_);
@@ -330,19 +331,23 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 			}
 		}
 		else	//LeftRight case
-		{		
-			node->left_ = leftRotation(node->left_->right_, node->left_);  
-			node = rightRotation(node->left_, node); 
-			if (parent == nullptr)//its the root 
-	    	    root_ = node;
-		    else
-		    {
-		    	node->parent_ = parent;
-        		if (parent->HasRightChild() && parent->right_ == node->right_)  
-        		  parent->right_ = node;
-        		else
-        		  parent->left_ = node;
-		    }
+		{	
+			if (node->left_->right_)
+			{
+			    assert(node->left_ != nullptr);	
+				node->left_ = leftRotation(node->left_->right_, node->left_);  
+				node = rightRotation(node->left_, node); 
+				if (parent == nullptr)//its the root 
+		    	    root_ = node;
+			    else
+			    {
+			    	node->parent_ = parent;
+	        		if (parent->HasRightChild() && parent->right_ == node->right_)  
+	        		  parent->right_ = node;
+	        		else
+	        		  parent->left_ = node;
+			    }
+			}
 		}
     }
 	if (Height(node->right_) - Height(node->left_) == 2) //RightRight or RightLeft case
@@ -363,22 +368,25 @@ void AVL::rebalence(int key, shared_ptr<AVLNode> node, shared_ptr<AVLNode> paren
 		}
 		else //RightLeft case
 		{
-			node->right_ = rightRotation(node->right_->left_, node->right_);
-			node = leftRotation(node->right_, node);
-			if (parent == nullptr)//its the root 
-            	root_ = node;
-            else
-            {
-            	node->parent_ = parent;
-               
-        		if (parent->HasRightChild() && parent->right_ == node->left_)  
-        		  parent->right_ = node;
-        		else
-        		  parent->left_ = node;
-            }
+			if (node->right_->left_)
+			{
+				assert(node->right_ != nullptr);
+				node->right_ = rightRotation(node->right_->left_, node->right_);
+				node = leftRotation(node->right_, node);
+				if (parent == nullptr)//its the root 
+	            	root_ = node;
+	            else
+	            {
+	            	node->parent_ = parent;
+	               
+	        		if (parent->HasRightChild() && parent->right_ == node->left_)  
+	        		  parent->right_ = node;
+	        		else
+	        		  parent->left_ = node;
+	            }
+	        }
 		}
     }
-
 }
 
 shared_ptr<AVLNode> AVL::rightRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNode> parent)
@@ -429,135 +437,9 @@ shared_ptr<AVLNode> AVL::leftRotation(shared_ptr<AVLNode> node, shared_ptr<AVLNo
 void AVL::DeleteMinH() // For AVL 
 {
 	shared_ptr<AVLNode> node = findMin(root_); 
-	assert(node != nullptr); 
-	if (node->key_ == root_->key_)
-		deleteH(node->key_, root_);
 
-	deleteH(node->key_, root_->left_); 
-
+    deleteH(node->key_, root_);
 }
-
-void AVL::deleteMin(std::shared_ptr<AVLNode> currentNode) //not using this function anymore
-{
-	/*
-	shared_ptr<AVLNode> lastNode = currentNode->parent_.lock();
-
-	if(currentNode->left_ == nullptr)
-	{
-        shared_ptr<AVLNode> tempChild = currentNode->right_;
-  
-  		if (lastNode != nullptr)
-  		{
-  			DeleteLeaf(currentNode);
-  			//currentNode
-  		}
-		else// Deleting Root
-		{
-			
-			if (currentNode->right_) //Root has subtree
-			{
-				currentNode->parent_.reset(); 
-				
-				size_--; 
-				currentNode->left_.reset();
-				root_ = root_->right_;
-				
-				return;
-			}
-			else //last node in tree
-			{
-				root_ = nullptr; 
-				size_--; 
-			}
-		}
-		if (tempChild != nullptr)
-		{		  
-		  lastNode->left_ = tempChild;
-		  tempChild->parent_ = lastNode;
-		}
-		return; 
-	}
-	else
-	{
-		deleteMin(currentNode->left_); 
-     
-		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
-    	currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);
-
-	    if (currentNode->bf_ == - 2)  // Left Heavy 
-		{
-		    if (Height(currentNode->left_-> left_) > Height(currentNode->left_->right_)) 
-		    {
-		        currentNode = rightRotation(currentNode->left_, currentNode);
-				if (lastNode == nullptr)
-					root_ = currentNode;
-				else
-				{
-					currentNode->parent_ = lastNode;
-	        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->right_)  
-	        		  lastNode->right_ = currentNode;
-	        		else
-	        		  lastNode->left_ = currentNode;
-				}
-		    }
-		    else // Left Right Case
-		    {
-		        currentNode->left_ = leftRotation(currentNode->left_->right_, currentNode->left_);
-		        currentNode = rightRotation(currentNode->left_, currentNode); 
-		        if (lastNode== nullptr)
-		              root_ = currentNode;
-		        else
-		        {
-		          currentNode->parent_ = lastNode;
-		          if (lastNode->HasRightChild() && lastNode->right_ == currentNode)
-		            lastNode->right_ = currentNode;
-		          else
-		            lastNode->left_ = currentNode;
-		        }
-		    }
-		}
-		if (currentNode->bf_ == 2) //Right heavy
-		{
-			if (Height(currentNode->right_->right_) >= Height(currentNode->right_->left_)) // bug was < or <= 
-			{
-			   currentNode = leftRotation(currentNode->right_,currentNode); //RR case 
-			  
-			   if (lastNode == nullptr)//its the root 
-					root_ = currentNode; 
-			   else
-			   {
-					currentNode->parent_ = lastNode;
-	        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->left_)  
-	        		  lastNode->right_ = currentNode;
-	        		else
-	        		  lastNode->left_ = currentNode;
-			    }
-			   
-        	}
-        	else // RightLeft case
-        	{
-        	    currentNode->right_ = rightRotation(currentNode->right_->left_, currentNode->right_); //node and parent
-
-				currentNode = leftRotation(currentNode->right_, currentNode);
-
-				if (currentNode->parent_.lock() == nullptr)//its the root 
-            		root_ = currentNode;
-            	else
-            	{
-            		currentNode->parent_ = lastNode;
-                	if (lastNode->HasRightChild() && lastNode->right_ == currentNode->left_)
-        		 		lastNode->right_ = currentNode;
-        			else
-        		  		lastNode->left_ = currentNode;
-        		}
-        	}
-		}
-		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
-        currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);   
-    }
-  */
-}
-
 
 void AVL::DeleteH(int key)
 {
@@ -566,6 +448,7 @@ void AVL::DeleteH(int key)
 
 void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 {
+    shared_ptr<AVLNode> lastNode; 
 
 	if (currentNode == nullptr)
 		return; //key not found
@@ -586,7 +469,7 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock();
 						if (parent != nullptr)
 						{
-							cout << "about to segfault, replace child " << endl; 
+				        	lastNode = currentNode->parent_.lock();
 				        	parent->ReplaceChild(currentNode, currentNode->left_);
 				        }
 				        else//Root case
@@ -602,7 +485,8 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 						std::shared_ptr<AVLNode> parent = currentNode->parent_.lock(); 
 						if (parent != nullptr)
 						{
-							cout << "about to segfault, replace child " << endl; 
+				        	lastNode = currentNode->parent_.lock(); 
+
 				        	parent->ReplaceChild(currentNode, currentNode->right_);
 				        }
 				        else//Root cases
@@ -623,9 +507,10 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 							else
 								parent->left_.reset();
 
+							lastNode = currentNode->parent_.lock();
+
 							currentNode->parent_.reset();
 							currentNode = nullptr;
-						    //DeleteLeaf(currentNode);
 						    size_--; 
 						    return;
 						}
@@ -634,7 +519,8 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 					    	root_->left_.reset();
 		                    root_->right_.reset(); 
 	                    	root_ = nullptr;
-	                    	size_--; assert(size_ == 0);
+	                    	size_--; 
+	                    	return;
 					    }
 
 					}
@@ -653,82 +539,89 @@ void AVL::deleteH(int key, shared_ptr<AVLNode> currentNode )
 		}
 	}
 
-    shared_ptr<AVLNode> lastNode = currentNode->parent_.lock();
-   
-	currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
-	currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);
+    if (lastNode)
+    {
+		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
+		currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);
 
-	if (Height(currentNode->right_) - Height(currentNode->left_) <= -2)//(currentNode->bf_ == - 2)  // left heavy 
-	{
-	    if (Height(currentNode->left_-> left_) > Height(currentNode->left_->right_)) //LeftLeft Case
-	    {
-            currentNode = rightRotation(currentNode->left_, currentNode);
-			if (lastNode == nullptr)  // its the root 
-				root_ = currentNode;
-			else
-			{
-				currentNode->parent_ = lastNode;
-        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->right_)  
-        		  lastNode->right_ = currentNode;
-        		else
-        		  lastNode->left_ = currentNode;
-			}
-
-	    }
-	    else 
-	    {
-	        currentNode->left_ = leftRotation(currentNode->left_->right_, currentNode->left_);
-	        currentNode = rightRotation(currentNode->left_, currentNode);
-	        if (lastNode == nullptr)//its the root 
-	              root_ = currentNode;
-	        else
-	        {
-	          currentNode->parent_ = lastNode;
-
-	          if (lastNode->HasRightChild() && lastNode->right_ == currentNode->right_)  
-        		  lastNode->right_ = currentNode;
-        	  else
-        		  lastNode->left_ = currentNode;  
-	        }
-	    }
-	}
-	if (Height(currentNode->right_) - Height(currentNode->left_) >= 2)//(currentNode->bf_ == 2) //Right heavy
-	{
-		if (Height(currentNode->right_->right_) >= Height(currentNode->right_->left_)) // bug was < or <= 
+		if (Height(currentNode->right_) - Height(currentNode->left_) <= -2)//(currentNode->bf_ == - 2)  // left heavy 
 		{
-		   currentNode = leftRotation(currentNode->right_,currentNode); //RR case 
-		   if (lastNode == nullptr)//its the root 
-				root_ = currentNode; 
-		   else
-		   {
-			    currentNode->parent_ = lastNode;
-        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->left_)  
-        		  lastNode->right_ = currentNode;
-        		else
-        		  lastNode->left_ = currentNode;
-			}
-    	}
-    	else // RightLeft case
-    	{
-    	    currentNode->right_ = rightRotation(currentNode->right_->left_, currentNode->right_); //node and parent 
-			currentNode->right_->parent_ = currentNode;
+		    if (Height(currentNode->left_-> left_) > Height(currentNode->left_->right_)) //LeftLeft Case
+		    {
+	            currentNode = rightRotation(currentNode->left_, currentNode);
+				if (lastNode == nullptr)  // its the root 
+					root_ = currentNode;
+				else
+				{
+					currentNode->parent_ = lastNode;
+	        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->right_)  
+	        		  lastNode->right_ = currentNode;
+	        		else
+	        		  lastNode->left_ = currentNode;
+				}
 
-			currentNode = leftRotation(currentNode->right_, currentNode);
+		    }
+		    else 
+		    {
+		    	if (currentNode->left_->right_)
+		    	{
+			        currentNode->left_ = leftRotation(currentNode->left_->right_, currentNode->left_);
+			        currentNode = rightRotation(currentNode->left_, currentNode);
+			        if (lastNode == nullptr)//its the root 
+			              root_ = currentNode;
+			        else
+			        {
+			          currentNode->parent_ = lastNode;
 
-			if (currentNode->parent_.lock() == nullptr)//its the root 
-        		root_ = currentNode;
-        	else
-        	{
-        		currentNode->parent_ = lastNode;
-        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->left_)  
-        		  lastNode->right_ = currentNode;
-        		else
-        		  lastNode->left_ = currentNode;
-    		}
-    	}
-	}
-	currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
-    currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);   
+			          if (lastNode->HasRightChild() && lastNode->right_ == currentNode->right_)  
+		        		  lastNode->right_ = currentNode;
+		        	  else
+		        		  lastNode->left_ = currentNode;  
+			        }
+			    }
+		    }
+		}
+		if (Height(currentNode->right_) - Height(currentNode->left_) >= 2)//(currentNode->bf_ == 2) //Right heavy
+		{
+			if (Height(currentNode->right_->right_) >= Height(currentNode->right_->left_)) // bug was < or <= 
+			{
+			   currentNode = leftRotation(currentNode->right_,currentNode); //RR case 
+			   if (lastNode == nullptr)//its the root 
+					root_ = currentNode; 
+			   else
+			   {
+				    currentNode->parent_ = lastNode;
+	        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->left_)  
+	        		  lastNode->right_ = currentNode;
+	        		else
+	        		  lastNode->left_ = currentNode;
+				}
+	    	}
+	    	else // RightLeft case
+	    	{
+	    		if (currentNode->right_->left_)
+	    		{
+		    	    currentNode->right_ = rightRotation(currentNode->right_->left_, currentNode->right_); //node and parent 
+					currentNode->right_->parent_ = currentNode;
+
+					currentNode = leftRotation(currentNode->right_, currentNode);
+
+					if (currentNode->parent_.lock() == nullptr)//its the root 
+		        		root_ = currentNode;
+		        	else
+		        	{
+		        		currentNode->parent_ = lastNode;
+		        		if (lastNode->HasRightChild() && lastNode->right_ == currentNode->left_)  
+		        		  lastNode->right_ = currentNode;
+		        		else
+		        		  lastNode->left_ = currentNode;
+		    		}
+		        }
+	    	}
+		}
+		currentNode->height_ = 1 + max(Height(currentNode->left_), Height(currentNode->right_)); 
+	    currentNode->bf_ = Height(currentNode->right_) - Height(currentNode->left_);   
+    }
 }
 
 
@@ -758,41 +651,43 @@ int main(int argc, char** argv) //Takes a json file with AVL commands, Insert, D
 	string fileName;
 	fileName.append(argv[1]);
 	    
-	string opnum;  
+	string opnum;
+	int count = 0;  
 
 	AVL T; //Declaring AVL object
 
-	/*for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
+	for (auto itr = jsonObject.begin(); itr != (--jsonObject.end()); ++itr)
 	{ 
 	    opnum = itr.key();
 
 	    if(jsonObject[opnum]["operation"] != "DeleteMin")
 	    {
 		    int key = jsonObject[opnum]["key"];
-		   	if (jsonObject[opnum]["operation"]== "Delete")  
+		   	if (jsonObject[opnum]["operation"]== "Delete") 
+		   	{ 
+		   		    count--;
 		        	T.DeleteH(key); 
-		    else 	   
-		        	T.InsertH(key);   
+		    }
+		    else
+		    {
+		            count++; 	   
+		        	T.InsertH(key);
+		    }   
 	    }
 	    else if (jsonObject[opnum]["operation"] == "DeleteMin")
 	    {
+	    	count--;
 			T.DeleteMinH(); 
 	    }
-	}*/
+	    if (count == -1)
+	    {
+	    	return 0;
+	    }
+	}
 
-	  T.InsertH(-64929822);
-      T.InsertH(2127432579);
-      T.InsertH(-177173015);
-      T.DeleteH(-177173015);
-      T.DeleteH(2127432579);
-      T.DeleteMinH();
-      T.InsertH(-1947211644);
-      T.InsertH(10);
-    cout << T.JSON() << endl; 
+      cout << T.JSON() << endl;
 
 }
-
-
 
 #endif 
 

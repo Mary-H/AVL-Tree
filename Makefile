@@ -2,10 +2,6 @@ CC=g++
 DEV=-Wall -g -std=c++14
 OPT=-O3 -std=c++14
 
-#AVLCOMMANDS_SRC=AVLCommands.cpp
-#AVLCOMMANDS_HDR=$(AVLCOMMANDS_SRC:.cpp=.h)
-#AVLCOMMANDS_OBJ=$(AVLCOMMANDS_SRC:.cpp=.o)
-
 .PHONY: all
 all: AVLCommands CreateData BSTSanityCheck
 
@@ -16,9 +12,8 @@ CreateData: CreateData.cxx json.hpp
 AVLCommands: AVLCommands.o json.hpp 
 	$(CC) $(DEV) -o AVLCommands AVLCommands.o
 
-
 #AVLCommands: AVLCommands.cpp json.hpp 
-#	$(CC) $(DEV) -c AVLCommands.cpp
+	#$(CC) $(DEV) -c AVLCommands.cpp
 
 BSTSanityCheck: BSTSanityCheck.cxx BST.o 
 	$(CC) $(DEV) BSTSanityCheck.cxx BST.o -o BSTSanityCheck
